@@ -41,3 +41,8 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 
 	return block
 }
+
+// NewGenesisBlock creates the first block of a blockchain
+func NewGenesisBlock() *Block {
+	return NewBlock("Genesis Block", []byte{})
+}

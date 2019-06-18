@@ -43,7 +43,7 @@ func (pow *ProofOfWork) prepareData(nonce int) []byte {
 }
 
 func convertIntToHex(number int64) []byte {
-	return []byte(fmt.Sprintf("%x", number))
+	return []byte(fmt.Sprintf("%0x", number))
 }
 
 // Run runs the ProofOfWork

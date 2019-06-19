@@ -32,9 +32,9 @@ func (pow *ProofOfWork) prepareData(nonce int) []byte {
 		[][]byte{
 			pow.block.PrevBlockHash,
 			pow.block.Data,
-			convertIntToHex(pow.block.Timestamp),
-			convertIntToHex(int64(targetBits)),
-			convertIntToHex(int64(nonce)),
+			ConvertIntToHex(pow.block.Timestamp),
+			ConvertIntToHex(int64(targetBits)),
+			ConvertIntToHex(int64(nonce)),
 		},
 		[]byte{},
 	)
@@ -42,8 +42,17 @@ func (pow *ProofOfWork) prepareData(nonce int) []byte {
 	return data
 }
 
-func convertIntToHex(number int64) []byte {
-	return []byte(fmt.Sprintf("%0x", number))
+// Validate validates the proof of work
+func (pow *ProofOfWork) Validate() bool {
+	var hashInt big.Int
+
+	data := pow.prepareData(pow.block.Nonce)
+	hash := sha256.Sum256(data)
+	hashInt.SetBytes(hash[:])
+
+	isValid := hashInt.Cmp(pow.target) == -1
+
+	return isValid
 }
 
 // Run runs the ProofOfWork

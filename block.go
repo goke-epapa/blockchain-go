@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/gob"
 	"strconv"
 	"time"
 )
@@ -45,4 +46,31 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 // NewGenesisBlock creates the first block of a blockchain
 func NewGenesisBlock() *Block {
 	return NewBlock("Genesis Block", []byte{})
+}
+
+// Serialise serialises a block to bytes
+func (b *Block) Serialise() ([]byte, error) {
+	var result bytes.Buffer
+	encoder := gob.NewEncoder(&result)
+
+	err := encoder.Encode(b)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Bytes(), nil
+}
+
+// DeserialiseBlock deserialises a block from bytes
+func DeserialiseBlock(db []byte) (*Block, error) {
+	var block Block
+
+	decoder := gob.NewDecoder(bytes.NewReader(db))
+	err := decoder.Decode(&block)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &block, nil
 }

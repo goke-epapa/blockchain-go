@@ -1,0 +1,11 @@
+## Blockchain Go
+> A simple project based on this https://jeiwan.cc/posts/building-blockchain-in-go-part-1/ which I am using to practice golang. 
+
+### TODO
+[ ] Implement Blockchain Repository Interface
+
+[ ] Implement BoltDB Blockchain Repository
+
+[ ] Implement Blockchain Service Interface 
+
+[ ] Implement BoltDB Blockchain Service

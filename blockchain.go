@@ -4,8 +4,9 @@ import "github.com/boltdb/bolt"
 
 const (
 	dbFile              = "blockchain_db"
-	blocksBucket        = "blocks"
 	lastBlockIdentifier = "l"
+	// BlocksBucket block DB identifier
+	BlocksBucket = "blocks"
 )
 
 // Blockchain blockchain struct
@@ -19,7 +20,7 @@ func (bc *Blockchain) AddBlock(data string) {
 	var lastHash []byte
 
 	err := bc.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(blocksBucket))
+		b := tx.Bucket([]byte(BlocksBucket))
 		lastHash = b.Get([]byte(lastBlockIdentifier))
 
 		return nil
@@ -28,7 +29,7 @@ func (bc *Blockchain) AddBlock(data string) {
 	newBlock := NewBlock(data, lastHash)
 
 	err := bd.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(blocksBucket))
+		b := tx.Bucket([]byte(BlocksBucket))
 		err := b.Put(newBlock.Hash, newBlock.Serialise())
 		err = b.Put([]byte(lastBlockIdentifier), newBlock.Hash)
 		bc.tip = newBlock.Hash
@@ -44,11 +45,11 @@ func NewBlockchain() *Blockchain {
 	db, _ := bolt.Open(dbFile, 0600, nil)
 
 	db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(blocksBucket))
+		b := tx.Bucket([]byte(BlocksBucket))
 
 		if b == nil {
 			genesis := NewGenesisBlock()
-			b, _ := tx.CreateBucket([]byte(blocksBucket))
+			b, _ := tx.CreateBucket([]byte(BlocksBucket))
 
 			sg, _ := genesis.Serialise()
 			_ = b.Put(genesis.Hash, sg)
@@ -64,4 +65,11 @@ func NewBlockchain() *Blockchain {
 	bc := &Blockchain{tip, db}
 
 	return bc
+}
+
+// Iterator return a new blockchain iterator
+func (bc *Blockchain) Iterator() *BlockchainIterator {
+	bci := &BlockchainIterator{bc.tip, bc.db}
+
+	return bci
 }

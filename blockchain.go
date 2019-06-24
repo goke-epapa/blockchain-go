@@ -3,8 +3,9 @@ package main
 import "github.com/boltdb/bolt"
 
 const (
-	dbFile       = "blockchain_db"
-	blocksBucket = "blocks"
+	dbFile              = "blockchain_db"
+	blocksBucket        = "blocks"
+	lastBlockIdentifier = "l"
 )
 
 // Blockchain blockchain struct
@@ -15,9 +16,25 @@ type Blockchain struct {
 
 // AddBlock adds a new block to the chain
 func (bc *Blockchain) AddBlock(data string) {
-	// prevBlock := bc.blocks[len(bc.blocks)-1]
-	// newBlock := NewBlock(data, prevBlock.Hash)
-	// bc.blocks = append(bc.blocks, newBlock)
+	var lastHash []byte
+
+	err := bc.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blocksBucket))
+		lastHash = b.Get([]byte(lastBlockIdentifier))
+
+		return nil
+	})
+
+	newBlock := NewBlock(data, lastHash)
+
+	err := bd.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blocksBucket))
+		err := b.Put(newBlock.Hash, newBlock.Serialise())
+		err = b.Put([]byte(lastBlockIdentifier), newBlock.Hash)
+		bc.tip = newBlock.Hash
+
+		return nil
+	})
 }
 
 // NewBlockchain creates a new blockchain
@@ -35,10 +52,10 @@ func NewBlockchain() *Blockchain {
 
 			sg, _ := genesis.Serialise()
 			_ = b.Put(genesis.Hash, sg)
-			_ = b.Put([]byte("g"), genesis.Hash)
+			_ = b.Put([]byte(lastBlockIdentifier), genesis.Hash)
 			tip = genesis.Hash
 		} else {
-			tip = b.Get([]byte("g"))
+			tip = b.Get([]byte(lastBlockIdentifier))
 		}
 
 		return nil
